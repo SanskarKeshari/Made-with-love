@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,9 +11,8 @@
     <style>
         body {
             margin: 0;
-            overflow-x: hidden;'
+            overflow-x: hidden;
             font-family: 'Inter', sans-serif;
-            height: ;
             touch-action: manipulation;
             background: linear-gradient(135deg, #f9a8d4, #f3e8ff);
         }
@@ -24,6 +22,15 @@
             width: 100%;
             min-height: 100vh;
             overflow: hidden;
+        }
+
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
         }
 
         #content {
@@ -44,7 +51,7 @@
             width: 100%;
             max-width: 800px;
             padding: 40px;
-            background: rgba(255, 255, 255, 0.509);
+            background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(10px);
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -53,7 +60,7 @@
             transform: translateY(20px);
             transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
             pointer-events: none;
-            overflow-y : auto;
+            overflow-y: auto;
             max-height: 90vh;
         }
 
@@ -97,25 +104,11 @@
         }
 
         @keyframes heartbeat {
-            0% {
-                transform: scale(1);
-            }
-
-            25% {
-                transform: scale(1.1);
-            }
-
-            50% {
-                transform: scale(1);
-            }
-
-            75% {
-                transform: scale(1.1);
-            }
-
-            100% {
-                transform: scale(1);
-            }
+            0% { transform: scale(1); }
+            25% { transform: scale(1.1); }
+            50% { transform: scale(1); }
+            75% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
 
         .emoji {
@@ -138,21 +131,39 @@
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
         }
 
-        #canvas-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
+        /* Balloons */
+        .balloon {
+            position: absolute;
+            bottom: -100px;
+            width: 50px;
+            height: 60px;
+            border-radius: 50%;
+            z-index: 5;
+            opacity: 0;
+        }
+
+        .balloon-string {
+            position: absolute;
+            bottom: -60px;
+            left: 24px;
+            width: 2px;
+            height: 60px;
+            background: #555;
+            transform-origin: top;
+        }
+
+        .party-popper {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            z-index: 5;
+            opacity: 0;
         }
     </style>
 </head>
-
 <body>
     <div id="app">
         <div id="canvas-container"></div>
-
         <div id="content">
             <div class="step active" id="step1">
                 <div class="emoji heart-beat">❤️</div>
@@ -179,7 +190,6 @@
                         <h3 class="text-xl font-bold mb-2 text-pink-600">Your Presence</h3>
                         <p class="text-gray-700">Your presence bbg is so magical that it lights up everyone near you (especially me)
                             and calms me and makes me nervous (I don't know why😭).</p>
-
                     </div>
                     <div class="reason-card">
                         <div class="emoji text-3xl">💖👑</div>
@@ -266,32 +276,36 @@
 
         const heartGeometry = new THREE.ExtrudeGeometry(heartShape, extrudeSettings);
 
-        // Create multiple hearts with different colors and properties
+        // Create more hearts (increased from 25 to 80)
         const hearts = [];
         const colors = [
             0xFF0000, // Vibrant red
             0xFF1493, // Deep pink
             0xDC143C, // Crimson red
             0xFF69B4, // Hot pink
-            0xDC3D6D  // Customized dark pink
+            0xDC3D6D, // Customized dark pink
+            0xFF6B6B, // Coral
+            0xFF7AA2, // Soft pink
+            0xFF85A1, // Watermelon
+            0xFFB7C5  // Cherry blossom
         ];
 
-        for (let i = 0; i < 25; i++) {
+        for (let i = 0; i < 80; i++) { // Increased number of hearts
             const material = new THREE.MeshPhongMaterial({
                 color: colors[Math.floor(Math.random() * colors.length)],
                 emissive: 0xff0000,
                 emissiveIntensity: 0.1,
                 shininess: 100,
                 transparent: true,
-                opacity: 0.9
+                opacity: 0.8
             });
 
             const heart = new THREE.Mesh(heartGeometry, material);
 
             // Random position and scale
-            heart.position.x = (Math.random() - 0.5) * 50;
-            heart.position.y = (Math.random() - 0.5) * 50;
-            heart.position.z = (Math.random() - 0.5) * 50;
+            heart.position.x = (Math.random() - 0.5) * 100;
+            heart.position.y = (Math.random() - 0.5) * 100;
+            heart.position.z = (Math.random() - 0.5) * 100;
 
             const scale = Math.random() * 0.8 + 0.5;
             heart.scale.set(scale, scale, scale);
@@ -394,59 +408,149 @@
             showStep(currentStep);
         });
 
+        // Function to create balloons
+        function createBalloons(count) {
+            const balloonColors = [
+                '#FF6B6B', '#FF85A1', '#FFB7C5', '#FFD3BA', '#FFAAA5',
+                '#A8E6CF', '#DCEDC1', '#FFD3B6', '#FFAAA5', '#FF8B94'
+            ];
+            
+            for (let i = 0; i < count; i++) {
+                // Create balloon container
+                const balloon = document.createElement('div');
+                balloon.className = 'balloon';
+                
+                // Random balloon properties
+                const size = Math.random() * 30 + 30;
+                const startX = Math.random() * window.innerWidth;
+                const duration = Math.random() * 8 + 12;
+                const color = balloonColors[Math.floor(Math.random() * balloonColors.length)];
+                
+                // Style the balloon
+                balloon.style.left = `${startX}px`;
+                balloon.style.width = `${size}px`;
+                balloon.style.height = `${size * 1.2}px`;
+                balloon.style.borderRadius = `${size/2}px ${size/2}px ${size/2}px ${size/2}px`;
+                balloon.style.backgroundColor = color;
+                balloon.style.boxShadow = `inset -5px -5px 10px rgba(0,0,0,0.1)`;
+                
+                // Create string
+                const string = document.createElement('div');
+                string.className = 'balloon-string';
+                string.style.height = `${size * 1.2}px`;
+                string.style.backgroundColor = `rgba(85,85,85,${Math.random() * 0.5 + 0.3})`;
+                
+                balloon.appendChild(string);
+                document.body.appendChild(balloon);
+                
+                // Animate balloon
+                gsap.to(balloon, {
+                    bottom: window.innerHeight + 100,
+                    opacity: 1,
+                    duration: duration,
+                    ease: "power1.out",
+                    onComplete: () => {
+                        document.body.removeChild(balloon);
+                    }
+                });
+                
+                // Add horizontal movement
+                gsap.to(balloon, {
+                    left: startX + (Math.random() - 0.5) * 200,
+                    duration: duration / 2,
+                    repeat: -1,
+                    yoyo: true,
+                    ease: "sine.inOut"
+                });
+            }
+        }
+
+        // Function to create party poppers
+        function createPartyPoppers(count) {
+            for (let i = 0; i < count; i++) {
+                const popper = document.createElement('div');
+                popper.className = 'party-popper';
+                popper.innerHTML = '🎉';
+                popper.style.fontSize = `${Math.random() * 20 + 20}px`;
+                popper.style.left = `${Math.random() * window.innerWidth}px`;
+                popper.style.top = `${Math.random() * window.innerHeight/2}px`;
+                popper.style.opacity = '1';
+                
+                document.body.appendChild(popper);
+                
+                // Animation
+                gsap.to(popper, {
+                    top: window.innerHeight + 100,
+                    left: popper.style.left.replace('px', '') * 1 + (Math.random() - 0.5) * 300,
+                    opacity: 0,
+                    duration: Math.random() * 3 + 2,
+                    ease: "power1.out",
+                    onComplete: () => {
+                        document.body.removeChild(popper);
+                    }
+                });
+            }
+        }
+
         // Confetti button
         document.getElementById('confetti-btn').addEventListener('click', () => {
             // Standard confetti
             confetti({
-                particleCount: 150,
-                spread: 70,
+                particleCount: 250,
+                spread: 100,
                 origin: { y: 0.6 },
-                colors: ['#ff0000', '#ff69b4', '#ff1493', '#ffc0cb']
+                colors: ['#ff0000', '#ff69b4', '#ff1493', '#ffc0cb', '#f59e0b']
             });
 
             // Heart-shaped confetti
             setTimeout(() => {
                 confetti({
-                    particleCount: 30,
-                    spread: 60,
+                    particleCount: 50,
+                    spread: 90,
                     origin: { y: 0.5 },
                     shapes: ['heart'],
-                    colors: ['#ff0000', '#ff69b4']
+                    colors: ['#ff0000', '#ff69b4', '#f43f5e']
                 });
             }, 300);
 
             // More hearts from different directions
             setTimeout(() => {
                 confetti({
-                    particleCount: 20,
+                    particleCount: 30,
                     angle: 60,
-                    spread: 55,
+                    spread: 65,
                     origin: { x: 0 },
                     shapes: ['heart'],
                     colors: ['#ff0000', '#ff69b4']
                 });
 
                 confetti({
-                    particleCount: 20,
+                    particleCount: 30,
                     angle: 120,
-                    spread: 55,
+                    spread: 65,
                     origin: { x: 1 },
                     shapes: ['heart'],
                     colors: ['#ff0000', '#ff69b4']
                 });
             }, 600);
 
+            // Create floating balloons
+            createBalloons(25);
+            
+            // Create party poppers
+            createPartyPoppers(15);
+
             // Make hearts float up from the background
             hearts.forEach(heart => {
                 gsap.to(heart.position, {
-                    y: heart.position.y - 30,
-                    duration: 3,
+                    y: heart.position.y - 50,
+                    duration: 5,
                     ease: "power1.out"
                 });
 
                 gsap.to(heart.material, {
                     opacity: 0,
-                    duration: 3,
+                    duration: 5,
                     ease: "power1.out"
                 });
             });
@@ -456,9 +560,4 @@
         showStep(currentStep);
     </script>
 </body>
-
-
 </html>
-
-
-
